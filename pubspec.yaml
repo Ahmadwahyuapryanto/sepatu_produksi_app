@@ -1,0 +1,44 @@
+name: sepatu_produksi_app
+description: "Sistem Informasi Produksi Sepatu Berbasis Android (Home Industri Pak Suprianto)"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Ikon standar aplikasi
+  cupertino_icons: ^1.0.6
+  
+  # Manajemen State & Logika Bisnis
+  provider: ^6.1.2
+  
+  # Backend & Koneksi Database
+  supabase_flutter: ^2.5.0
+  
+  # Keamanan Environment Variables
+  flutter_dotenv: ^5.1.0
+  
+  # Tipografi UI Minimalis
+  google_fonts: ^6.2.1
+
+  # Format angka, tanggal, dan Rupiah (lokalisasi Indonesia)
+  intl: ^0.19.0
+
+  # Persistensi preferensi pengguna (dark mode, dll)
+  shared_preferences: ^2.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Mendaftarkan file .env agar terbaca oleh sistem keamanan aplikasi
+  assets:
+    - .env
