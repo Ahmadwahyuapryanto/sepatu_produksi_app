@@ -8,6 +8,7 @@ import 'sepatu_katalog_screen.dart';
 import 'pekerja_screen.dart';
 import 'payroll_screen.dart';
 import 'laporan_screen.dart';
+import '../login_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -144,10 +145,37 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ],
                     ),
                   ),
-                  Container(
-                    width: 40, height: 40,
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: AppTheme.blueAccent.withValues(alpha: 0.15)),
-                    child: const Icon(Icons.person, color: AppTheme.blueAccent, size: 22),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 40, height: 40,
+                        decoration: BoxDecoration(shape: BoxShape.circle, color: AppTheme.blueAccent.withValues(alpha: 0.15)),
+                        child: const Icon(Icons.person, color: AppTheme.blueAccent, size: 22),
+                      ),
+                      const SizedBox(width: 8),
+                      // Tombol logout
+                      GestureDetector(
+                        onTap: () async {
+                          final auth = context.read<AuthProvider>();
+                          await auth.logout();
+                          if (context.mounted) {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (_) => const LoginScreen()),
+                              (route) => false,
+                            );
+                          }
+                        },
+                        child: Container(
+                          width: 40, height: 40,
+                          decoration: BoxDecoration(
+                            color: AppTheme.redAccent.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.logout_rounded, color: AppTheme.redAccent, size: 20),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

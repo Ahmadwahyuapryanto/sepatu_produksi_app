@@ -19,7 +19,6 @@ class AdminRepository {
     return (response as List).map((e) => UserModel.fromJson(e)).toList();
   }
 
-  // PERBAIKAN: Menambahkan opsi AuthFlowType.implicit agar tidak butuh AsyncStorage
   Future<String?> daftarkanAuthBaru(String email, String password) async {
     final tempClient = SupabaseClient(
       ApiConstants.supabaseUrl, 
@@ -106,9 +105,7 @@ class AdminRepository {
   }
 
   // ======================= PAYROLL / GAJI PEKERJA =======================
-  // Mengambil seluruh progres yang belum dibayar untuk seluruh pekerja
   Future<List<Map<String, dynamic>>> getRekapGajiPekerja() async {
-    // Mengambil data progres, join dengan user, sepatu, dan tahapan
     final response = await _supabaseService.client
         .from('tb_progres_produksi')
         .select('''
@@ -124,7 +121,6 @@ class AdminRepository {
     return (response as List).cast<Map<String, dynamic>>();
   }
 
-  // Menandai progres-progres tertentu sudah dibayar
   Future<void> tandaiSudahBayar(List<int> idsProgres) async {
     if (idsProgres.isEmpty) return;
     await _supabaseService.client
@@ -133,7 +129,6 @@ class AdminRepository {
         .inFilter('id', idsProgres);
   }
 
-  // Mengambil progres per pekerja (untuk detail)
   Future<List<ProgresProduksiModel>> getProgresByPekerja(String userId) async {
     final response = await _supabaseService.client
         .from('tb_progres_produksi')
@@ -145,7 +140,7 @@ class AdminRepository {
   }
 
   // ======================= LAPORAN =======================
-  // Laporan produksi per model (harian/mingguan/bulanan)
+  // Laporan produksi per model (harian/mingguan/bulanan) + user info
   Future<List<Map<String, dynamic>>> getLaporanProduksiByPeriode(
     DateTime start, 
     DateTime end,
@@ -157,7 +152,8 @@ class AdminRepository {
           jumlah_bagus,
           jumlah_reject,
           created_at,
-          tb_master_sepatu!inner ( nama_model )
+          tb_master_sepatu!inner ( nama_model ),
+          tb_users!inner ( nama_lengkap )
         ''')
         .gte('created_at', start.toIso8601String())
         .lte('created_at', end.toIso8601String())
@@ -165,7 +161,52 @@ class AdminRepository {
     return (response as List).cast<Map<String, dynamic>>();
   }
 
-  // Laporan pergerakan bahan baku
+  // Laporan pergerakan bahan baku + user info
+  // Laporan progres pekerjaan per tahapan (filter by id_tahapan)
+  Future<List<Map<String, dynamic>>> getLaporanPekerjaanByPeriode(
+    DateTime start,
+    DateTime end,
+  ) async {
+    final response = await _supabaseService.client
+        .from('tb_progres_produksi')
+        .select('''
+          id,
+          id_pekerja,
+          jumlah_selesai,
+          created_at,
+          tb_users!inner ( nama_lengkap ),
+          tb_master_tahapan!inner ( nama_tahapan, tarif_upah )
+        ''')
+        .gte('created_at', start.toIso8601String())
+        .lte('created_at', end.toIso8601String())
+        .order('created_at', ascending: false)
+        .limit(500);
+    return (response as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<List<Map<String, dynamic>>> getLaporanPekerjaanByPeriodeDanTahapan(
+    DateTime start,
+    DateTime end,
+    int idTahapan,
+  ) async {
+    final response = await _supabaseService.client
+        .from('tb_progres_produksi')
+        .select('''
+          id,
+          id_pekerja,
+          jumlah_selesai,
+          created_at,
+          tb_users!inner ( nama_lengkap ),
+          tb_master_tahapan!inner ( nama_tahapan, tarif_upah )
+        ''')
+        .eq('id_tahapan', idTahapan)
+        .gte('created_at', start.toIso8601String())
+        .lte('created_at', end.toIso8601String())
+        .order('created_at', ascending: false)
+        .limit(500);
+    return (response as List).cast<Map<String, dynamic>>();
+  }
+
   Future<List<Map<String, dynamic>>> getLaporanLogBahan(
     DateTime start, 
     DateTime end,
@@ -178,12 +219,13 @@ class AdminRepository {
           jumlah,
           keterangan,
           created_at,
-          tb_bahan_baku!inner ( nama_bahan, satuan )
+          tb_bahan_baku!inner ( nama_bahan, satuan ),
+          tb_users!inner ( nama_lengkap )
         ''')
         .gte('created_at', start.toIso8601String())
         .lte('created_at', end.toIso8601String())
         .order('created_at', ascending: false)
-        .limit(500); // pagination
+        .limit(500);
     return (response as List).cast<Map<String, dynamic>>();
   }
 }

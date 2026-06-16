@@ -42,3 +42,4 @@ flutter:
   # Mendaftarkan file .env agar terbaca oleh sistem keamanan aplikasi
   assets:
     - .env
+    - assets/images/

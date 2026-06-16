@@ -64,7 +64,6 @@ class _RiwayatBarangScreenState extends State<RiwayatBarangScreen> {
 
     return Column(
       children: [
-        // Header
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           child: Row(
@@ -82,11 +81,8 @@ class _RiwayatBarangScreenState extends State<RiwayatBarangScreen> {
             ],
           ),
         ),
-        // Summary cards
         _buildSummaryCards(),
-        // Filter tabs
         _buildFilterTabs(),
-        // Date grouped list
         Expanded(child: _buildGroupedList()),
       ],
     );
@@ -209,7 +205,6 @@ class _RiwayatBarangScreenState extends State<RiwayatBarangScreen> {
       );
     }
 
-    // Group by date
     final Map<String, List<_RiwayatItem>> grouped = {};
     for (final item in items) {
       grouped.putIfAbsent(item.dateKey, () => []).add(item);
@@ -322,8 +317,18 @@ class _RiwayatBarangScreenState extends State<RiwayatBarangScreen> {
                     Text(Formatters.tanggalWaktu(detail.log.createdAt), style: TextStyle(color: _textSec, fontSize: 11)),
                   ],
                 ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Icon(Icons.person_outline, size: 11, color: _textSec),
+                    const SizedBox(width: 3),
+                    Expanded(
+                      child: Text('oleh ${detail.namaUser}', style: TextStyle(color: _textSec, fontSize: 11), overflow: TextOverflow.ellipsis),
+                    ),
+                  ],
+                ),
                 if (detail.log.keterangan != null && detail.log.keterangan!.isNotEmpty) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(detail.log.keterangan!, style: TextStyle(color: _textSec, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],
               ],
@@ -375,6 +380,16 @@ class _RiwayatBarangScreenState extends State<RiwayatBarangScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(Formatters.tanggalWaktu(detail.qc.createdAt), style: TextStyle(color: _textSec, fontSize: 11)),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Icon(Icons.person_outline, size: 11, color: _textSec),
+                    const SizedBox(width: 3),
+                    Expanded(
+                      child: Text('oleh ${detail.namaUser}', style: TextStyle(color: _textSec, fontSize: 11), overflow: TextOverflow.ellipsis),
+                    ),
                   ],
                 ),
               ],

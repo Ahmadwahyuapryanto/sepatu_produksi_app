@@ -15,7 +15,14 @@ import 'ui/screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+  
+  // Load .env dengan fallback - tidak crash jika .env gagal di-load
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    // .env gagal dimuat, ApiConstants akan menggunakan fallback values
+    debugPrint('Warning: .env file failed to load: $e');
+  }
 
   // Inisialisasi locale Indonesia untuk intl (date formatting)
   await initializeDateFormatting('id_ID', null);

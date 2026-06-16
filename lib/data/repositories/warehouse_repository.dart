@@ -9,21 +9,22 @@ class LogBahanDetail {
   final LogBahanModel log;
   final String namaBahan;
   final String satuan;
+  final String namaUser;
 
-  LogBahanDetail({required this.log, required this.namaBahan, required this.satuan});
+  LogBahanDetail({required this.log, required this.namaBahan, required this.satuan, this.namaUser = '-'});
 }
 
 class QcProduksiDetail {
   final QcProduksiModel qc;
   final String namaModel;
+  final String namaUser;
 
-  QcProduksiDetail({required this.qc, required this.namaModel});
+  QcProduksiDetail({required this.qc, required this.namaModel, this.namaUser = '-'});
 }
 
 class WarehouseRepository {
   final SupabaseService _supabaseService = SupabaseService();
 
-  // Mengambil stok bahan baku saat ini
   Future<List<BahanBakuModel>> getDaftarBahanBaku() async {
     final response = await _supabaseService.client
         .from('tb_bahan_baku')
@@ -32,7 +33,6 @@ class WarehouseRepository {
     return (response as List).map((e) => BahanBakuModel.fromJson(e)).toList();
   }
 
-  // Menambahkan jenis bahan baku baru
   Future<BahanBakuModel> tambahBahanBaku(String namaBahan, String satuan) async {
     final response = await _supabaseService.client
         .from('tb_bahan_baku')
@@ -46,7 +46,6 @@ class WarehouseRepository {
     return BahanBakuModel.fromJson(response);
   }
 
-  // Mengupdate jenis bahan baku
   Future<void> updateBahanBaku(BahanBakuModel bahan) async {
     await _supabaseService.client
         .from('tb_bahan_baku')
@@ -57,7 +56,6 @@ class WarehouseRepository {
         .eq('id', bahan.id);
   }
 
-  // Menghapus jenis bahan baku
   Future<void> hapusBahanBaku(int id) async {
     await _supabaseService.client
         .from('tb_bahan_baku')
@@ -65,14 +63,12 @@ class WarehouseRepository {
         .eq('id', id);
   }
 
-  // Mencatat transaksi bahan masuk/keluar (otomatis trigger stok di Supabase)
   Future<void> insertLogBahan(LogBahanModel logBahan) async {
     await _supabaseService.client
         .from('tb_log_bahan')
         .insert(logBahan.toJson());
   }
 
-  // Mengambil daftar sepatu untuk keperluan QC
   Future<List<SepatuModel>> getDaftarSepatu() async {
     final response = await _supabaseService.client
         .from('tb_master_sepatu')
@@ -80,7 +76,6 @@ class WarehouseRepository {
     return (response as List).map((e) => SepatuModel.fromJson(e)).toList();
   }
 
-  // Mencatat sepatu bagus dan reject hasil QC (otomatis trigger stok di Supabase)
   Future<void> insertQcProduksi(QcProduksiModel qcProduksi) async {
     await _supabaseService.client
         .from('tb_qc_produksi')
@@ -88,54 +83,56 @@ class WarehouseRepository {
   }
 
   // ==================== RIWAYAT BARANG ====================
-
-  /// Mengambil riwayat log bahan masuk/keluar (dengan join nama bahan)
   Future<List<LogBahanDetail>> getRiwayatLogBahan({int limit = 100, int offset = 0}) async {
     final response = await _supabaseService.client
         .from('tb_log_bahan')
-        .select('*, tb_bahan_baku(nama_bahan, satuan)')
+        .select('*, tb_bahan_baku(nama_bahan, satuan), tb_users!inner(nama_lengkap)')
         .order('created_at', ascending: false)
         .range(offset, offset + limit - 1);
     return (response as List).map((e) {
       final bahan = e['tb_bahan_baku'] ?? {};
+      final user = e['tb_users'] ?? {};
       return LogBahanDetail(
         log: LogBahanModel.fromJson(e),
         namaBahan: bahan['nama_bahan'] ?? '-',
         satuan: bahan['satuan'] ?? '',
+        namaUser: user['nama_lengkap'] ?? '-',
       );
     }).toList();
   }
 
-  /// Mengambil riwayat log bahan berdasarkan tipe transaksi (MASUK/KELUAR)
   Future<List<LogBahanDetail>> getRiwayatLogBahanByTipe(String tipe, {int limit = 100, int offset = 0}) async {
     final response = await _supabaseService.client
         .from('tb_log_bahan')
-        .select('*, tb_bahan_baku(nama_bahan, satuan)')
+        .select('*, tb_bahan_baku(nama_bahan, satuan), tb_users!inner(nama_lengkap)')
         .eq('tipe_transaksi', tipe)
         .order('created_at', ascending: false)
         .range(offset, offset + limit - 1);
     return (response as List).map((e) {
       final bahan = e['tb_bahan_baku'] ?? {};
+      final user = e['tb_users'] ?? {};
       return LogBahanDetail(
         log: LogBahanModel.fromJson(e),
         namaBahan: bahan['nama_bahan'] ?? '-',
         satuan: bahan['satuan'] ?? '',
+        namaUser: user['nama_lengkap'] ?? '-',
       );
     }).toList();
   }
 
-  /// Mengambil riwayat QC produksi (dengan join nama sepatu)
   Future<List<QcProduksiDetail>> getRiwayatQcProduksi({int limit = 100, int offset = 0}) async {
     final response = await _supabaseService.client
         .from('tb_qc_produksi')
-        .select('*, tb_master_sepatu(nama_model)')
+        .select('*, tb_master_sepatu(nama_model), tb_users!inner(nama_lengkap)')
         .order('created_at', ascending: false)
         .range(offset, offset + limit - 1);
     return (response as List).map((e) {
       final sepatu = e['tb_master_sepatu'] ?? {};
+      final user = e['tb_users'] ?? {};
       return QcProduksiDetail(
         qc: QcProduksiModel.fromJson(e),
         namaModel: sepatu['nama_model'] ?? '-',
+        namaUser: user['nama_lengkap'] ?? '-',
       );
     }).toList();
   }

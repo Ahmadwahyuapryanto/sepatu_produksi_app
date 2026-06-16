@@ -329,6 +329,38 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
+  // Laporan pekerjaan per tahapan
+  Future<List<Map<String, dynamic>>> fetchLaporanPekerjaanByPeriode(
+    DateTime start,
+    DateTime end,
+  ) async {
+    _setLoading(true);
+    try {
+      return await _adminRepository.getLaporanPekerjaanByPeriode(start, end);
+    } catch (e) {
+      _errorMessage = "Gagal memuat laporan pekerjaan: ${e.toString()}";
+      return [];
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchLaporanPekerjaanByTahapan(
+    DateTime start,
+    DateTime end,
+    int idTahapan,
+  ) async {
+    _setLoading(true);
+    try {
+      return await _adminRepository.getLaporanPekerjaanByPeriodeDanTahapan(start, end, idTahapan);
+    } catch (e) {
+      _errorMessage = "Gagal memuat laporan pekerjaan: ${e.toString()}";
+      return [];
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<List<Map<String, dynamic>>> fetchLaporanLogBahan(
     DateTime start, 
     DateTime end,
